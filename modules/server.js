@@ -18,4 +18,5 @@ function getApp(req, res, cb) {
   cb(null, { renderDocument, routes, renderApp })
 }
 
-createServer(getApp).start()
+const server = createServer(getApp)
+server.start()

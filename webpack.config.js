@@ -12,9 +12,14 @@ conf.ClientDevConfig.module.postLoaders = [
 conf.ClientDevConfig.resolve = {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      webworkify: 'webworkify-webpack'
+      webworkify: 'webworkify-webpack',
+      TweenMax: 'gsap/src/uncompressed/TweenMax.js',
     }
   }
+
+conf.ClientDevConfig.plugins.push(
+  new webpack.ProvidePlugin({TweenMax: "TweenMax"})
+)
 
 conf.ClientDevConfig.module.loaders.push(
   {
