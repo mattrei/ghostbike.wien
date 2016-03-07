@@ -193,9 +193,11 @@ class Map extends React.Component {
             <h2 className={header}>RAR!</h2>
             <MapGL {...this.state.viewport}
               onChangeViewport={this._onChangeViewport}>
-              <Overlay {...this.state.viewport} locations={this.state.data} />
+              <Overlay {...this.state.viewport}
+                locations={this.state.ghostbikes}
+                polylines={this.state.polylines}
+                accidents={this.props.accidents} />
             </MapGL>
-            <Attribution />
           </div>
 
   }
