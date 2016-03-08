@@ -29,19 +29,14 @@ const VIE = {lat: 48.209206, lng: 16.372778}
 class Map extends React.Component {
 
   state = {
-      overlay: {
-        width: 700,
-        height: 450,
-        zoom: 0,
-        mapStyle: 'mapbox://styles/mapbox/streets-v8',
-        mapboxApiAccessToken: 'pk.eyJ1IjoibWF0dHJlIiwiYSI6IjRpa3ItcWcifQ.s0AGgKi0ai23K5OJvkEFnA'
-      },
       viewport: {
         width: window.innerWidth,
         height: window.innerHeight,
         latitude: VIE.lat,
         longitude: VIE.lng,
-        mapStyle: Immutable.fromJS(mapStyle),
+        //mapStyle: Immutable.fromJS(mapStyle),
+        mapStyle: 'mapbox://styles/mapbox/dark-v8',
+        mapboxApiAccessToken: 'pk.eyJ1IjoibWF0dHJlIiwiYSI6IjRpa3ItcWcifQ.s0AGgKi0ai23K5OJvkEFnA',
         zoom: 11,
         isDragging: false
       },
