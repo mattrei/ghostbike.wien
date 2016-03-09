@@ -4,7 +4,7 @@ import io from 'socket.io-client'
 
 export default class Home extends React.Component {
   componentDidMount() {
-    const socket = io('//localhost:8080')
+    const socket = io()
   }
 
   render() {

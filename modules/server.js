@@ -5,7 +5,8 @@ import { createServer } from 'react-project/server'
 import { RouterContext } from 'react-router'
 import Document from '../modules/components/Document'
 import routes from '../modules/routes'
-import Socket from 'socket.io'
+
+export const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8082
 
 function getApp(req, res, requestCallback) {
   // here is your chance to do things like get an auth token and generate
@@ -24,8 +25,8 @@ function getApp(req, res, requestCallback) {
 }
 
 const app = createServer(getApp)
-const server = require('http').Server(app)
-const io = new Socket(server)
-const events = require('./events')(io);
-
 app.start()
+const server = require('http').Server(app)
+server.listen(SOCKETIO_PORT) // socketio port
+const io = require('socket.io')(server);
+const events = require('./events')(io);

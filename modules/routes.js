@@ -20,5 +20,6 @@ export default (
     </ServerRoute>
     <Redirect from="/not-dragon" to="/dragon"/>
     <Route path="*" status={404} component={NoMatch}/>
+
   </Route>
 )
