@@ -2,14 +2,16 @@ var webpack = require('webpack')
 var path = require('path')
 var conf = require('react-project/webpack')
 
-conf.ClientDevConfig.module.postLoaders = [
+console.log(conf)
+
+conf.ClientConfig.module.postLoaders = [
   {
     include: path.resolve(__dirname, 'node_modules/pixi.js'),
     loader: 'transform?brfs'
   }
 ]
 
-conf.ClientDevConfig.resolve = {
+conf.ClientConfig.resolve = {
     extensions: ['', '.js', '.jsx'],
     alias: {
       webworkify: 'webworkify-webpack',
@@ -17,17 +19,17 @@ conf.ClientDevConfig.resolve = {
     }
   }
 
-conf.ClientDevConfig.plugins.push(
+conf.ClientConfig.plugins.push(
   new webpack.ProvidePlugin({TweenMax: "TweenMax"})
 )
 
-conf.ClientDevConfig.module.loaders.push(
+conf.ClientConfig.module.loaders.push(
   {
   test: /\.js$/,
   include: path.resolve(__dirname, 'node_modules/mapbox-gl/js/render/shaders.js'),
   loader: 'transform/cacheable?brfs'
 })
-conf.ClientDevConfig.module.loaders.push(
+conf.ClientConfig.module.loaders.push(
 {
   test: /\.js$/,
   include: path.resolve(__dirname, 'node_modules/webworkify/index.js'),
@@ -35,47 +37,14 @@ conf.ClientDevConfig.module.loaders.push(
 }
 )
 
-conf.ClientDevConfig.module.node =  {
+conf.ClientConfig.module.node =  {
     console: true,
     fs: "empty"
   }
 
 
 
-console.log(conf.ClientDevConfig)
+console.log(conf.ClientConfig)
 
-
-conf.ClientProdConfig.module.postLoaders = [
-  {
-    include: path.resolve(__dirname, 'node_modules/pixi.js'),
-    loader: 'transform?brfs'
-  }
-]
-
-conf.ClientProdConfig.resolve = {
-    extensions: ['', '.js', '.jsx'],
-    alias: {
-      webworkify: 'webworkify-webpack'
-    }
-  }
-
-conf.ClientProdConfig.module.loaders.push(
-  {
-  test: /\.js$/,
-  include: path.resolve(__dirname, 'node_modules/mapbox-gl/js/render/shaders.js'),
-  loader: 'transform/cacheable?brfs'
-})
-conf.ClientProdConfig.module.loaders.push(
-{
-  test: /\.js$/,
-  include: path.resolve(__dirname, 'node_modules/webworkify/index.js'),
-  loader: 'worker'
-}
-)
-
-conf.ClientProdConfig.module.node =  {
-    console: true,
-    fs: "empty"
-  }
 
 module.exports = conf
