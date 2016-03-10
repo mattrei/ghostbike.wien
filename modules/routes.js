@@ -8,8 +8,6 @@ import Home from './components/Home'
 import NoMatch from './components/NoMatch'
 import loadMap from 'bundle?lazy!./components/Map'
 
-//import Map from './components/Map'
-
 import hello from './api/hello'
 
 export default (

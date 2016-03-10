@@ -34,15 +34,18 @@ conf.ClientConfig.module.loaders.push(
   loader: 'worker'
 }
 )
-
+/*
+conf.ClientConfig.module.loaders.push(
+  {
+     test: /\.json$/,
+     include: path.resolve(__dirname, 'node_modules/pixi.js'),
+     loader: 'json'
+   }
+)
+*/
 conf.ClientConfig.module.node =  {
     console: true,
     fs: "empty"
   }
-
-
-
-//console.log(conf.ClientConfig)
-
 
 module.exports = conf

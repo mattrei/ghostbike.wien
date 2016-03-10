@@ -6,7 +6,11 @@ import ReactDOM from 'react-dom'
 import { header } from './styles.css'
 import Title from 'react-title-component'
 
+<<<<<<< HEAD:modules/components/Map/index.js
 //import PIXI from 'pixi.js'
+=======
+import PIXI from 'pixi.js'
+>>>>>>> 3188c7a4083c4369f583a8f2ad9b0df126d6215e:modules/components/Map/index.js
 import r from 'r-dom'
 import MapGL from 'react-map-gl'
 
@@ -52,7 +56,11 @@ class Map extends React.Component {
         {id: 5, latitude: 48.1987, longitude: 16.367 },
         {id: 6, latitude: 48.2298, longitude: 16.401 },
       ],
+<<<<<<< HEAD:modules/components/Map/index.js
       //socket: io()
+=======
+      socket: io()
+>>>>>>> 3188c7a4083c4369f583a8f2ad9b0df126d6215e:modules/components/Map/index.js
   }
 
   componentDidMount() {
@@ -91,8 +99,13 @@ class Map extends React.Component {
         this.setState({ghostbikes: this.state.ghostbikes.concat([ghostbike])})
 
 
+<<<<<<< HEAD:modules/components/Map/index.js
         const route = this._getRandomRoute()
         //this.props.socket.emit('set route', route)
+=======
+        const route = this.getRandomRoute()
+        this.props.socket.emit('set route', route)
+>>>>>>> 3188c7a4083c4369f583a8f2ad9b0df126d6215e:modules/components/Map/index.js
         this._driveRoute(route)
   }
 
@@ -102,8 +115,13 @@ class Map extends React.Component {
 
     //this.setState({polylines: this.state.polylines.concat([polyline])})
 
+<<<<<<< HEAD:modules/components/Map/index.js
     const route = this._getRandomRoute()
     //this.props.socket.emit('set route', route)
+=======
+    const route = this.getRandomRoute()
+    this.props.socket.emit('set route', route)
+>>>>>>> 3188c7a4083c4369f583a8f2ad9b0df126d6215e:modules/components/Map/index.js
 
     this._driveRoute(ghostbike, route)
   }
