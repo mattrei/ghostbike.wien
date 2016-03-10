@@ -6,6 +6,8 @@ import ReactDOM from 'react-dom'
 import { header } from './styles.css'
 import Title from 'react-title-component'
 
+import shortid from 'shortid'
+
 import PIXI from 'pixi.js'
 import r from 'r-dom'
 import MapGL from 'react-map-gl'
@@ -39,23 +41,62 @@ class Map extends React.Component {
         zoom: 11,
         isDragging: false
       },
+      accidents: [],
       polylines: [],
       ghostbikes: [],
     }
 
   static defaultProps = {
-      accidents: [
-        {id: 1, latitude: 48.18, longitude: 16.36 },
-        {id: 2, latitude: 48.28, longitude: 16.42 },
-        {id: 3, latitude: 48.20, longitude: 16.37 },
-        {id: 4, latitude: 48.21, longitude: 16.389 },
-        {id: 5, latitude: 48.1987, longitude: 16.367 },
-        {id: 6, latitude: 48.2298, longitude: 16.401 },
-      ],
-      socket: io('//localhost:8082')
+      socket: io('//localhost:8082'),
+      me: {
+          latitude: VIE.lat,
+          longitude: VIE.lng,
+          rotation: Math.random() * Math.PI * 2,
+          id: shortid.generate(),
+          color: tinycolor({ h: 0, s: 1, l: Math.random() }).toHexString(),
+          size: 10 //Math.random() * 6 + 3,
+        }
+  }
+
+  _createGhostbike = (id) => {
+    const color = tinycolor({ h: 0, s: 1, l: Math.random() }).toHexString()
+    const ghostbike = {
+        latitude: VIE.lat,
+        longitude: VIE.lng,
+        rotation: Math.random() * Math.PI * 2,
+        id: id,
+        color: color,
+        size: 10 //Math.random() * 6 + 3,
+      }
+
+    return ghostbike
+  }
+
+  _onResponseRoute = (route) => {
+    const respId = route.ghostbike.id
+    if (respId !== this.props.me.id) {
+      // if it is not me
+      console.log('is not me')
+      let otherGhostbike = this.state.ghostbikes.find(ghostbike => ghostbike.id === respId )
+      if (!otherGhostbike) {
+        console.log("createing ghostbike")
+        otherGhostbike = this._createGhostbike(respId)
+        this.setState({ghostbikes: this.state.ghostbikes.concat([otherGhostbike])})
+      }
+    }
+    console.log(this.state.ghostbikes)
   }
 
   componentDidMount() {
+
+    const me = this.props.me
+
+    this.setState({ghostbikes: this.state.ghostbikes.concat([me])})
+
+    this.props.socket.on('response route', (route) => {
+      this._onResponseRoute(route)
+    })
+
     window.addEventListener('resize', () => {
       this.setState({
         viewport: Object.assign({}, this.state.viewport, {
@@ -64,6 +105,27 @@ class Map extends React.Component {
         })
       });
     })
+
+    fetch(`api/accidents`)
+        .then((response) => {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            return response.json();
+        })
+        .then((accidents) => {
+          this.setState({accidents:accidents.accidents})
+
+          const route = this._getRandomRoute()
+          const data = {
+            ghostbike: me,
+            route: route
+          }
+          this.props.socket.emit('set route', data)
+          this._driveRoute(me, route)
+        })
+
+
 
         var loop = () => {
           /*
@@ -77,33 +139,18 @@ class Map extends React.Component {
         }
         window.requestAnimationFrame(loop)
 
-        // TODO - demo
-        const color = tinycolor({ h: 0, s: 1, l: 0.5 }).toHexString()
 
-        const ghostbike = {
-            latitude: VIE.lat,
-            longitude: VIE.lng,
-            rotation: Math.random() * Math.PI * 2,
-            id: 'id-' + 1,
-            color: color,
-            size: 10 //Math.random() * 6 + 3,
-          }
-        this.setState({ghostbikes: this.state.ghostbikes.concat([ghostbike])})
-
-
-        const route = this._getRandomRoute()
-        this.props.socket.emit('set route', route)
-        this._driveRoute(ghostbike, route)
   }
 
   _routeCompleted = (ghostbike) => {
-    //console.log("completed")
-    //console.log(ghostbike)
-
     //this.setState({polylines: this.state.polylines.concat([polyline])})
 
-    const route = this._getRandomRoute()
-    //this.props.socket.emit('set route', route)
+    const route = this._getRandomRoute(),
+      data = {
+        ghostbike: ghostbike,
+        route: route.route
+      }
+    this.props.socket.emit('set route', data)
 
     this._driveRoute(ghostbike, route)
   }
@@ -113,9 +160,33 @@ class Map extends React.Component {
   }
 
   _getRandomRoute = () => {
-    const shuffled = this.props.accidents //arrayShuffle(this.props.accidents)
+    const shuffled = this.state.accidents //arrayShuffle(this.props.accidents)
     const locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
-    return locations
+    return {
+      route: {a: shuffled[0].id, b: shuffled[1].id },
+      locations: locations
+    }
+  }
+
+  _tweenGhostbike = (ghostbike) => {
+    const values = shapeToLatlng(ghostbike._polyline.shape)
+    const duration = ghostbike._trip.summary.time / 50
+    const quantity = ghostbike._trip.summary.length
+
+    const tween = new TweenMax(ghostbike, quantity, {
+        bezier: {
+            type: "soft",
+            values: values,
+            autoRotate: ["latitude", "longitude", "rotation", 0, true]
+        },
+        ease: Linear.easeNone,
+        autoCSS: false,
+        onUpdate: this._routeUpdated,
+        onUpdateParams: [ghostbike],
+        onComplete: this._routeCompleted,
+        onCompleteParams: [ghostbike],
+        //callbackScope: datum
+    });
   }
 
   _driveRoute = (ghostbike, route) => {
@@ -125,9 +196,9 @@ class Map extends React.Component {
         return {latitude: s[0], longitude: s[1]}
       })
     }
-
+/*
     fetch(`//valhalla.mapzen.com/route?json=
-      {"locations":${route},
+      {"locations":${route.locations},
         "costing":"bicycle",
         "costing_options":{"bicycle":{"bicycle_type":"road"}},
         "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
@@ -178,6 +249,8 @@ class Map extends React.Component {
 
 
         })
+        */
+
   }
 
   _onUserConnected = () => {
@@ -198,7 +271,7 @@ class Map extends React.Component {
               <Overlay {...this.state.viewport}
                 locations={this.state.ghostbikes}
                 polylines={this.state.polylines}
-                accidents={this.props.accidents} />
+                accidents={this.state.accidents} />
             </MapGL>
           </div>
 

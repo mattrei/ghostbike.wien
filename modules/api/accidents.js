@@ -8,6 +8,6 @@ export default function (req, res, { params, location, route }) {
     {id: 4, latitude: 48.21, longitude: 16.389 },
     {id: 5, latitude: 48.1987, longitude: 16.367 },
     {id: 6, latitude: 48.2298, longitude: 16.401 },
-  ],
+  ]
   res.send({accidents: accidents})
 }
