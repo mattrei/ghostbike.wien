@@ -1,3 +1,4 @@
+import hub from './hub'
 
 module.exports = (io) => {
   const sendMessages = (city, socket) => {
@@ -21,18 +22,21 @@ module.exports = (io) => {
   };
   io.on('connection', (socket) => {
     console.log("connected")
-    hub.connectCounter += 1;
-    socket.on('set city', (city) => {
+    hub.connectCounter += 1
+    socket.on('set route', (route) => {
+      console.log(route)
+      /*
       for (const room in socket.rooms) {
         socket.leave(room);
       }
       socket.join(city);
-      sendMessages(city, socket);
-      sendInfo(city, socket);
-    });
+      */
+      //sendMessages(city, socket);
+      //sendInfo(city, socket);
+    })
     socket.on('disconnect', () => {
       hub.connectCounter -= 1;
-    });
+    })
   });
   setInterval(() => {
 

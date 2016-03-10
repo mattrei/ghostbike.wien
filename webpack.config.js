@@ -2,8 +2,6 @@ var webpack = require('webpack')
 var path = require('path')
 var conf = require('react-project/webpack')
 
-console.log(conf)
-
 conf.ClientConfig.module.postLoaders = [
   {
     include: path.resolve(__dirname, 'node_modules/pixi.js'),
@@ -44,7 +42,7 @@ conf.ClientConfig.module.node =  {
 
 
 
-console.log(conf.ClientConfig)
+//console.log(conf.ClientConfig)
 
 
 module.exports = conf

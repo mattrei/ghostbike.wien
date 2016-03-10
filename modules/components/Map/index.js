@@ -3,12 +3,10 @@ import window from 'global/window'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import dragon from './dragon.jpg'
 import { header } from './styles.css'
 import Title from 'react-title-component'
 
-
-import PIXI from 'pixi.js'
+//import PIXI from 'pixi.js'
 import r from 'r-dom'
 import MapGL from 'react-map-gl'
 
@@ -25,6 +23,7 @@ import {API_KEY, decode} from './routing'
 
 const VIE = {lat: 48.209206, lng: 16.372778}
 
+import io from 'socket.io-client'
 
 class Map extends React.Component {
 
@@ -52,7 +51,8 @@ class Map extends React.Component {
         {id: 4, latitude: 48.21, longitude: 16.389 },
         {id: 5, latitude: 48.1987, longitude: 16.367 },
         {id: 6, latitude: 48.2298, longitude: 16.401 },
-      ]
+      ],
+      //socket: io()
   }
 
   componentDidMount() {
@@ -78,7 +78,22 @@ class Map extends React.Component {
         window.requestAnimationFrame(loop)
 
         // TODO - demo
-        this._onUserConnected()
+        const color = tinycolor({ h: 0, s: 1, l: 0.5 }).toHexString()
+
+        const ghostbike = {
+            latitude: VIE.lat,
+            longitude: VIE.lng,
+            rotation: Math.random() * Math.PI * 2,
+            id: 'id-' + 1,
+            color: color,
+            size: 10 //Math.random() * 6 + 3,
+          }
+        this.setState({ghostbikes: this.state.ghostbikes.concat([ghostbike])})
+
+
+        const route = this._getRandomRoute()
+        //this.props.socket.emit('set route', route)
+        this._driveRoute(route)
   }
 
   _routeCompleted = (ghostbike) => {
@@ -87,14 +102,23 @@ class Map extends React.Component {
 
     //this.setState({polylines: this.state.polylines.concat([polyline])})
 
-    this._driveRandomRoute(ghostbike)
+    const route = this._getRandomRoute()
+    //this.props.socket.emit('set route', route)
+
+    this._driveRoute(ghostbike, route)
   }
 
   _routeUpdated = (ghostbike) => {
     //console.log("update")
   }
 
-  _driveRandomRoute = (ghostbike) => {
+  _getRandomRoute = () => {
+    const shuffled = this.props.accidents //arrayShuffle(this.props.accidents)
+    const locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
+    return locations
+  }
+
+  _driveRoute = (ghostbike, route) => {
 
     const shapeToLatlng = (shape) => {
       return shape.map(s => {
@@ -102,13 +126,8 @@ class Map extends React.Component {
       })
     }
 
-    const shuffled = this.props.accidents //arrayShuffle(this.props.accidents)
-
-    var locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
-    console.log(locations)
-
     fetch(`//valhalla.mapzen.com/route?json=
-      {"locations":${locations},
+      {"locations":${route},
         "costing":"bicycle",
         "costing_options":{"bicycle":{"bicycle_type":"road"}},
         "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
@@ -163,19 +182,7 @@ class Map extends React.Component {
 
   _onUserConnected = () => {
 
-    const color = tinycolor({ h: 0, s: 1, l: 0.5 }).toHexString()
 
-    const ghostbike = {
-        latitude: VIE.lat,
-        longitude: VIE.lng,
-        rotation: Math.random() * Math.PI * 2,
-        id: 'id-' + 1,
-        color: color,
-        size: 10 //Math.random() * 6 + 3,
-      }
-    this.setState({ghostbikes: this.state.ghostbikes.concat([ghostbike])})
-
-    this._driveRandomRoute(ghostbike)
   }
 
   _onChangeViewport = (viewport) => {
