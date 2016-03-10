@@ -21,9 +21,11 @@ module.exports = (io) => {
     });
   };
   io.on('connection', (socket) => {
-    console.log("connected")
+
     hub.connectCounter += 1
+    console.log(`connected ${hub.connectCounter}`)
     socket.on('set route', (route) => {
+      console.log('set route')
       console.log(route)
       /*
       for (const room in socket.rooms) {
