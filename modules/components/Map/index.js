@@ -2,6 +2,7 @@ import document from 'global/document'
 import window from 'global/window'
 
 import React from 'react'
+import Relay from 'react-relay'
 import ReactDOM from 'react-dom'
 import { header } from './styles.css'
 import Title from 'react-title-component'
@@ -55,7 +56,10 @@ class Map extends React.Component {
           id: shortid.generate(),
           color: tinycolor({ h: 0, s: 1, l: Math.random() }).toHexString(),
           size: 10 //Math.random() * 6 + 3,
-        }
+        },
+      accidentAccessor: function(accident) {
+        return accident.shortid
+      }
   }
 
   _createGhostbike = (id) => {
@@ -150,13 +154,15 @@ class Map extends React.Component {
             }
             return response.json();
         })
-        .then((accidents) => {
-          this.setState({accidents:accidents.accidents})
+        .then((resp) => {
+          this.setState({accidents: resp.data.accidents})
 
-          const route = this._getRandomRoute()
+          const route = this._getRandomAccidents()
           const data = {
-            ghostbike: me,
-            route: route
+            data: {
+              ghostbike: me,
+              route: route
+            }
           }
           this.props.socket.emit('set route', data)
           this._driveRoute(me, route)
@@ -182,7 +188,7 @@ class Map extends React.Component {
   _routeCompleted = (ghostbike) => {
     //this.setState({polylines: this.state.polylines.concat([polyline])})
 
-    const route = this._getRandomRoute(),
+    const route = this._getRandomAccidents(),
       data = {
         ghostbike: ghostbike,
         route: route.route
@@ -196,12 +202,11 @@ class Map extends React.Component {
     //console.log("update")
   }
 
-  _getRandomRoute = () => {
+  _getRandomAccidents = () => {
     const shuffled = this.state.accidents //arrayShuffle(this.props.accidents)
-    const locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
     return {
-      route: {a: shuffled[0].id, b: shuffled[1].id },
-      locations: locations
+      from: this.props.accidentAccessor(shuffled[0]),
+      to: this.props.accidentAccessor(shuffled[1])
     }
   }
 

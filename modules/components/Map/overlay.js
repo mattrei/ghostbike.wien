@@ -49,7 +49,7 @@ module.exports = React.createClass({
         return polyline.id;
       },
       accidentAccessor: function polylineAccessor(accident) {
-        return accident.id;
+        return accident.shortid;
       },
       locations: [],
       polylines: [],

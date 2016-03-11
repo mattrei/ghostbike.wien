@@ -1,8 +1,8 @@
 [
-{"id": 1, "latitude": 48.18, "longitude": 16.36 },
-{"id": 2, "latitude": 48.28, "longitude": 16.42 },
-{"id": 3, "latitude": 48.20, "longitude": 16.37 },
-{"id": 4, "latitude": 48.21, "longitude": 16.389 },
-{"id": 5, "latitude": 48.1987, "longitude": 16.367 },
-{"id": 6, "latitude": 48.2298, "longitude": 16.401 }
+{"shortid": "asdf", "name": "Unfall1", "latitude": 48.18, "longitude": 16.36 },
+{"shortid": "asdf2", "name": "Unfall2", "latitude": 48.28, "longitude": 16.42 },
+{"shortid": "asdf3", "name": "Unfall3", "latitude": 48.20, "longitude": 16.37 },
+{"shortid": "asdf4", "name": "Unfall4", "latitude": 48.21, "longitude": 16.389 },
+{"shortid": "asdf5", "name": "Unfall5", "latitude": 48.1987, "longitude": 16.367 },
+{"shortid": "asdf6", "name": "Unfall6", "latitude": 48.2298, "longitude": 16.401 }
 ]

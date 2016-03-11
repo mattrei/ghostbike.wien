@@ -50,14 +50,32 @@ const decode = (str, precision) => {
           return coordinates;
       }
 
+import {graphql} from 'graphql'
+import schema from './schema'
 
 async function getRoute(route) {
         console.log("inside getroute")
+        console.log(route)
 
-        const locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
+        const fromQuery = `{
+          accidents(shortid: "${route.from}") {
+            latitude,
+            longitude
+          }
+        }`,
+        toQuery = `{
+          accidents(shortid: "${route.to}") {
+            latitude,
+            longitude
+          }
+        }`
 
-        const url = `//valhalla.mapzen.com/route?json=
-          {"locations":${route.locations},
+        const from = await graphql(schema, fromQuery),
+          to = await graphql(schema, toQuery),
+          locations = `[{"lat":${from.data.accidents[0].latitude},"lon":${from.data.accidents[0].longitude}},{"lat":${to.data.accidents[0].latitude},"lon":${to.data.accidents[0].longitude}}]`
+
+        const url = `http://valhalla.mapzen.com/route?json=
+          {"locations":${locations},
             "costing":"bicycle",
             "costing_options":{"bicycle":{"bicycle_type":"road"}},
             "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`
@@ -67,37 +85,11 @@ async function getRoute(route) {
         try {
           const response = await fetch(url)
           const data = await response.json()
-          console.log(data)
           return data
         } catch(e) {
-          console.log(e)
+          console.error(e)
         }
 
-        /*
-        fetch(`//valhalla.mapzen.com/route?json=
-          {"locations":${route.locations},
-            "costing":"bicycle",
-            "costing_options":{"bicycle":{"bicycle_type":"road"}},
-            "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
-            .then((response) => {
-                if (response.status >= 400) {
-                    throw new Error("Bad response from server");
-                }
-                return response.json();
-            })
-            .then((route) => {
-              console.log("route fetched")
-              console.log(route)
-                const polyline = {
-                  shape: decode(route.trip.legs[0].shape)
-                }
-
-                cb({
-                  trip: route.trip,
-                  polyline: polyline
-                })
-            })
-            */
       }
 
 export { getRoute }

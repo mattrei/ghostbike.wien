@@ -1,8 +1,14 @@
 import mongoose from 'mongoose'
+import shortid from 'shortid'
 
 const AccidentSchema = new mongoose.Schema({
+  shortid: {
+    type: String,
+    default: shortid.generate()
+  },
   name: {
-    type: String
+    type: String,
+    default: ''
   },
   description: {
     type: String,

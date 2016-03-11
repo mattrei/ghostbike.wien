@@ -20,12 +20,12 @@ module.exports = (io) => {
   io.on('connection', async (socket) => {
 
     hub.connectCounter += 1
-    socket.on('set route', async (route) => {
+    socket.on('set route', async (req) => {
       console.log('calc route')
+      console.log(req)
+      const route = await getRoute(req.data.route)
       console.log(route)
-      const data = await getRoute(route)
-      console.log(data)
-      broadcastRoute(data, socket)
+      broadcastRoute(route, socket)
     })
     socket.on('disconnect', () => {
       hub.connectCounter -= 1;
