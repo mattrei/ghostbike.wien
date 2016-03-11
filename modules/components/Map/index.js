@@ -28,6 +28,9 @@ const VIE = {lat: 48.209206, lng: 16.372778}
 
 import io from 'socket.io-client'
 
+const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8082
+const ioSocket = io(`http://localhost:${SOCKETIO_PORT}`)
+
 class Map extends React.Component {
 
   state = {
@@ -48,7 +51,7 @@ class Map extends React.Component {
     }
 
   static defaultProps = {
-      socket: io('//localhost:8082'),
+      socket: ioSocket,
       me: {
           latitude: VIE.lat,
           longitude: VIE.lng,
@@ -180,13 +183,14 @@ class Map extends React.Component {
   _routeCompleted = (ghostbike) => {
     //this.setState({polylines: this.state.polylines.concat([polyline])})
     console.log('route completed')
-    console.log(ghostbike)
+    console.log(this.props.socket)
     const route = this._getRandomAccidents(),
       data = {
         ghostbike: ghostbike,
         route: route
       }
     this.props.socket.emit('set route', data)
+    console.log(this.props.socket)
   }
 
   _routeUpdated = (ghostbike) => {

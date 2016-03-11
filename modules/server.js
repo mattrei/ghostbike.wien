@@ -31,9 +31,7 @@ function getApp(req, res, requestCallback) {
 }
 
 const app = createServer(getApp)
-app.use(graffiti.express({
-  schema
-}))
+app.use(graffiti.express({schema}))
 
 app.start()
 
