@@ -34,9 +34,6 @@ const app = createServer(getApp)
 app.use(graffiti.express({
   schema
 }))
-app.use((req, res) => {
-  res.redirect('/graphql');
-})
 
 app.start()
 
