@@ -51,29 +51,53 @@ const decode = (str, precision) => {
       }
 
 
-export default { getRoute: async function (route, cb) {
-  fetch(`//valhalla.mapzen.com/route?json=
-    {"locations":${route.locations},
-      "costing":"bicycle",
-      "costing_options":{"bicycle":{"bicycle_type":"road"}},
-      "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
-      .then((response) => {
-          if (response.status >= 400) {
-              throw new Error("Bad response from server");
-          }
-          return response.json();
-      })
-      .then((route) => {
-        console.log("route fetched")
-        console.log(route)
-          const polyline = {
-            shape: decode(route.trip.legs[0].shape)
-          }
+async function getRoute(route) {
+        console.log("inside getroute")
 
-          cb({
-            trip: route.trip,
-            polyline: polyline
-          })
-      })
-}
-}
+        const locations = `[{"lat":${shuffled[0].latitude},"lon":${shuffled[0].longitude}},{"lat":${shuffled[1].latitude},"lon":${shuffled[1].longitude}}]`
+
+        const url = `//valhalla.mapzen.com/route?json=
+          {"locations":${route.locations},
+            "costing":"bicycle",
+            "costing_options":{"bicycle":{"bicycle_type":"road"}},
+            "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`
+
+        console.log(url)
+
+        try {
+          const response = await fetch(url)
+          const data = await response.json()
+          console.log(data)
+          return data
+        } catch(e) {
+          console.log(e)
+        }
+
+        /*
+        fetch(`//valhalla.mapzen.com/route?json=
+          {"locations":${route.locations},
+            "costing":"bicycle",
+            "costing_options":{"bicycle":{"bicycle_type":"road"}},
+            "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
+            .then((response) => {
+                if (response.status >= 400) {
+                    throw new Error("Bad response from server");
+                }
+                return response.json();
+            })
+            .then((route) => {
+              console.log("route fetched")
+              console.log(route)
+                const polyline = {
+                  shape: decode(route.trip.legs[0].shape)
+                }
+
+                cb({
+                  trip: route.trip,
+                  polyline: polyline
+                })
+            })
+            */
+      }
+
+export { getRoute }

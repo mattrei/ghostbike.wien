@@ -74,17 +74,54 @@ class Map extends React.Component {
 
   _onResponseRoute = (route) => {
     const respId = route.ghostbike.id
+    let ghostbike = this.props.me
     if (respId !== this.props.me.id) {
       // if it is not me
       console.log('is not me')
-      let otherGhostbike = this.state.ghostbikes.find(ghostbike => ghostbike.id === respId )
-      if (!otherGhostbike) {
+      ghostbike = this.state.ghostbikes.find(ghostbike => ghostbike.id === respId )
+      if (!ghostbike) {
         console.log("createing ghostbike")
-        otherGhostbike = this._createGhostbike(respId)
-        this.setState({ghostbikes: this.state.ghostbikes.concat([otherGhostbike])})
+        ghostbike = this._createGhostbike(respId)
+        this.setState({ghostbikes: this.state.ghostbikes.concat([ghostbike])})
       }
     }
     console.log(this.state.ghostbikes)
+    const polyline = {
+      id: ghostbike.id,
+      shape: decode(route.trip.legs[0].shape)
+    }
+    ghostbike._trip = route.trip
+    ghostbike._polyline = polyline
+    ghostbike.latitude = polyline.shape[0][0]
+    ghostbike.longitude = polyline.shape[0][1]
+
+
+    // set all points to visible = ffalse
+    polyline.shape.forEach(point => {
+      point.push(true) // 3rd element is visiblity
+    })
+    console.log(polyline)
+
+    this.setState({polylines: this.state.polylines.concat([polyline])})
+
+    const values = shapeToLatlng(ghostbike._polyline.shape)
+    const duration = ghostbike._trip.summary.time / 50
+    const quantity = ghostbike._trip.summary.length
+
+    const tween = new TweenMax(ghostbike, quantity, {
+        bezier: {
+            type: "soft",
+            values: values,
+            autoRotate: ["latitude", "longitude", "rotation", 0, true]
+        },
+        ease: Linear.easeNone,
+        autoCSS: false,
+        onUpdate: this._routeUpdated,
+        onUpdateParams: [ghostbike],
+        onComplete: this._routeCompleted,
+        onCompleteParams: [ghostbike],
+        //callbackScope: datum
+    });
   }
 
   componentDidMount() {

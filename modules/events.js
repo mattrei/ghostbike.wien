@@ -1,5 +1,5 @@
 import hub from './hub'
-import Route from './valhalla'
+import {getRoute} from './valhalla'
 
 module.exports = (io) => {
   const sendMessages = (city, socket) => {
@@ -17,31 +17,23 @@ module.exports = (io) => {
     console.log(route)
     socket.broadcast.emit('response route', route)
   };
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
 
     hub.connectCounter += 1
-    console.log(`connected ${hub.connectCounter}`)
-    socket.on('set route', (route) => {
+    socket.on('set route', async (route) => {
       console.log('calc route')
-
-      const cb = broadcastRoute(route, socket)
-      Route.getRoute(route, cb)
-
-
-      /*
-      for (const room in socket.rooms) {
-        socket.leave(room);
-      }
-      socket.join(city);
-      */
-      //sendMessages(city, socket);
-      //sendInfo(city, socket);
+      console.log(route)
+      const data = await getRoute(route)
+      console.log(data)
+      broadcastRoute(data, socket)
     })
     socket.on('disconnect', () => {
       hub.connectCounter -= 1;
     })
+
   });
   setInterval(() => {
 
   }, 5e3);
+
 };

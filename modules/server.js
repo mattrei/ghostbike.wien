@@ -6,6 +6,12 @@ import { RouterContext } from 'react-router'
 import Document from '../modules/components/Document'
 import routes from '../modules/routes'
 
+import mongoose from 'mongoose'
+import graffiti from '@risingstack/graffiti'
+import schema from './schema'
+
+
+
 export const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8082
 
 function getApp(req, res, requestCallback) {
@@ -25,7 +31,15 @@ function getApp(req, res, requestCallback) {
 }
 
 const app = createServer(getApp)
+app.use(graffiti.express({
+  schema
+}))
+app.use((req, res) => {
+  res.redirect('/graphql');
+})
+
 app.start()
+
 const server = require('http').Server(app)
 server.listen(SOCKETIO_PORT) // socketio port
 const io = require('socket.io')(server);
