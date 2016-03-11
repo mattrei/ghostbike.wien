@@ -12,20 +12,20 @@ module.exports = (io) => {
     });
   };
 
-  const broadcastRoute = (route, socket) => {
+  const broadcastRoute = (data, socket) => {
     console.log("broadcasting route")
-    console.log(route)
-    socket.broadcast.emit('response route', route)
+    socket.emit('response route', data)
   };
   io.on('connection', async (socket) => {
-
     hub.connectCounter += 1
     socket.on('set route', async (req) => {
-      console.log('calc route')
-      console.log(req)
-      const route = await getRoute(req.data.route)
-      console.log(route)
-      broadcastRoute(route, socket)
+      const trip = await getRoute(req.data.route)
+
+      const data = {
+        data: {ghostbike: req.data.ghostbike}
+      }
+      Object.assign(data.data, trip)
+      broadcastRoute(data, socket)
     })
     socket.on('disconnect', () => {
       hub.connectCounter -= 1;

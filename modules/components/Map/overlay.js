@@ -214,8 +214,8 @@ module.exports = React.createClass({
       node._line.lineStyle(5, 0xff0000);
 
       node._data.shape.forEach((point, i) => {
-        var lngLat = [point[1], point[0]]
-        var pixel = mercator.project(lngLat);
+        var lngLat = [point.longitude, point.latitude]
+        var pixel = mercator.project(lngLat)
         if (lastPixel) {
           node._line.moveTo(lastPixel[0], lastPixel[1])
           node._line.lineTo(pixel[0], pixel[1])

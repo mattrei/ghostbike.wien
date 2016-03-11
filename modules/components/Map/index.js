@@ -76,8 +76,10 @@ class Map extends React.Component {
     return ghostbike
   }
 
-  _onResponseRoute = (route) => {
-    const respId = route.ghostbike.id
+  _onResponseRoute = (resp) => {
+    console.log("on response")
+    console.log(resp)
+    const respId = resp.data.ghostbike.id
     let ghostbike = this.props.me
     if (respId !== this.props.me.id) {
       // if it is not me
@@ -92,25 +94,24 @@ class Map extends React.Component {
     console.log(this.state.ghostbikes)
     const polyline = {
       id: ghostbike.id,
-      shape: decode(route.trip.legs[0].shape)
+      shape: resp.data.shape
     }
-    ghostbike._trip = route.trip
+    ghostbike._trip = resp.data.trip
     ghostbike._polyline = polyline
-    ghostbike.latitude = polyline.shape[0][0]
-    ghostbike.longitude = polyline.shape[0][1]
-
-
-    // set all points to visible = ffalse
-    polyline.shape.forEach(point => {
-      point.push(true) // 3rd element is visiblity
-    })
+    // move ghostbike to first point
+    ghostbike.latitude = polyline.shape[0].latitude
+    ghostbike.longitude = polyline.shape[0].longitude
     console.log(polyline)
 
     this.setState({polylines: this.state.polylines.concat([polyline])})
 
-    const values = shapeToLatlng(ghostbike._polyline.shape)
-    const duration = ghostbike._trip.summary.time / 50
-    const quantity = ghostbike._trip.summary.length
+    this._tweenGhostbike(ghostbike)
+  }
+
+  _tweenGhostbike = (ghostbike) => {
+    const values = ghostbike._polyline.shape,
+       duration = ghostbike._trip.summary.time / 50,
+       quantity = ghostbike._trip.summary.length
 
     const tween = new TweenMax(ghostbike, quantity, {
         bezier: {
@@ -132,10 +133,9 @@ class Map extends React.Component {
 
     const me = this.props.me
 
-    this.setState({ghostbikes: this.state.ghostbikes.concat([me])})
-
-    this.props.socket.on('response route', (route) => {
-      this._onResponseRoute(route)
+    this.props.socket.on('response route', (data) => {
+      console.log("response route")
+      this._onResponseRoute(data)
     })
 
     window.addEventListener('resize', () => {
@@ -157,18 +157,10 @@ class Map extends React.Component {
         .then((resp) => {
           this.setState({accidents: resp.data.accidents})
 
-          const route = this._getRandomAccidents()
-          const data = {
-            data: {
-              ghostbike: me,
-              route: route
-            }
-          }
-          this.props.socket.emit('set route', data)
-          this._driveRoute(me, route)
+          this._routeCompleted(me)
+          this.setState({ghostbikes: this.state.ghostbikes.concat([me])})
+
         })
-
-
 
         var loop = () => {
           /*
@@ -187,15 +179,14 @@ class Map extends React.Component {
 
   _routeCompleted = (ghostbike) => {
     //this.setState({polylines: this.state.polylines.concat([polyline])})
-
+    console.log('route completed')
+    console.log(ghostbike)
     const route = this._getRandomAccidents(),
       data = {
         ghostbike: ghostbike,
-        route: route.route
+        route: route
       }
     this.props.socket.emit('set route', data)
-
-    this._driveRoute(ghostbike, route)
   }
 
   _routeUpdated = (ghostbike) => {
@@ -208,96 +199,6 @@ class Map extends React.Component {
       from: this.props.accidentAccessor(shuffled[0]),
       to: this.props.accidentAccessor(shuffled[1])
     }
-  }
-
-  _tweenGhostbike = (ghostbike) => {
-    const values = shapeToLatlng(ghostbike._polyline.shape)
-    const duration = ghostbike._trip.summary.time / 50
-    const quantity = ghostbike._trip.summary.length
-
-    const tween = new TweenMax(ghostbike, quantity, {
-        bezier: {
-            type: "soft",
-            values: values,
-            autoRotate: ["latitude", "longitude", "rotation", 0, true]
-        },
-        ease: Linear.easeNone,
-        autoCSS: false,
-        onUpdate: this._routeUpdated,
-        onUpdateParams: [ghostbike],
-        onComplete: this._routeCompleted,
-        onCompleteParams: [ghostbike],
-        //callbackScope: datum
-    });
-  }
-
-  _driveRoute = (ghostbike, route) => {
-
-    const shapeToLatlng = (shape) => {
-      return shape.map(s => {
-        return {latitude: s[0], longitude: s[1]}
-      })
-    }
-/*
-    fetch(`//valhalla.mapzen.com/route?json=
-      {"locations":${route.locations},
-        "costing":"bicycle",
-        "costing_options":{"bicycle":{"bicycle_type":"road"}},
-        "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`)
-        .then((response) => {
-            if (response.status >= 400) {
-                throw new Error("Bad response from server");
-            }
-            return response.json();
-        })
-        .then((route) => {
-          console.log(route)
-            const polyline = {
-              id: ghostbike.id,
-              shape: decode(route.trip.legs[0].shape)
-            }
-            ghostbike._trip = route.trip
-            ghostbike._polyline = polyline
-            ghostbike.latitude = polyline.shape[0][0]
-            ghostbike.longitude = polyline.shape[0][1]
-
-
-            // set all points to visible = ffalse
-            polyline.shape.forEach(point => {
-              point.push(true) // 3rd element is visiblity
-            })
-            console.log(polyline)
-
-            this.setState({polylines: this.state.polylines.concat([polyline])})
-
-            const values = shapeToLatlng(ghostbike._polyline.shape)
-            const duration = ghostbike._trip.summary.time / 50
-            const quantity = ghostbike._trip.summary.length
-
-            const tween = new TweenMax(ghostbike, quantity, {
-                bezier: {
-                    type: "soft",
-                    values: values,
-                    autoRotate: ["latitude", "longitude", "rotation", 0, true]
-                },
-                ease: Linear.easeNone,
-                autoCSS: false,
-                onUpdate: this._routeUpdated,
-                onUpdateParams: [ghostbike],
-                onComplete: this._routeCompleted,
-                onCompleteParams: [ghostbike],
-                //callbackScope: datum
-            });
-
-
-        })
-        */
-
-  }
-
-  _onUserConnected = () => {
-
-
   }
 
   _onChangeViewport = (viewport) => {

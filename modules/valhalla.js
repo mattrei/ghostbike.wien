@@ -50,6 +50,12 @@ const decode = (str, precision) => {
           return coordinates;
       }
 
+const shapeToLatLng = (shape) => {
+        return shape.map(s => {
+          return {latitude: s[0], longitude: s[1]}
+        })
+      }
+
 import {graphql} from 'graphql'
 import schema from './schema'
 
@@ -80,11 +86,10 @@ async function getRoute(route) {
             "costing_options":{"bicycle":{"bicycle_type":"road"}},
             "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`
 
-        console.log(url)
-
         try {
           const response = await fetch(url)
-          const data = await response.json()
+          let data = await response.json()
+          data.shape = shapeToLatLng(decode(data.trip.legs[0].shape))
           return data
         } catch(e) {
           console.error(e)
