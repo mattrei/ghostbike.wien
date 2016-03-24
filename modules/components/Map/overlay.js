@@ -6,6 +6,8 @@ var browser = require('bowser');
 var ViewportMercator = require('viewport-mercator-project');
 var prefix = browser.webkit ? '-webkit-' : browser.gecko ? '-moz-' : '';
 
+const RADIUS = {GHOSTBIKE: 4, ACCIDENT: 5}
+
 module.exports = React.createClass({
 
   displayName: 'Overlay',
@@ -69,6 +71,7 @@ module.exports = React.createClass({
   componentDidMount: function componentDidMount() {
     this._renderer = this._createPIXIRenderer();
     this._stage = new PIXI.Container();
+    //this._stage = new PIXI.Stage(0x66FF99, true)
 
     this._locationsContainer = new PIXI.Container();
     this._stage.addChild(this._locationsContainer);
@@ -101,6 +104,9 @@ module.exports = React.createClass({
   },
 
   _updateAccidents: function () {
+
+    const radius = 10 //TODO
+
     var added = [];
     var incomingHash = {};
     if (this.props.accidents) {
@@ -117,11 +123,13 @@ module.exports = React.createClass({
     added.forEach(accident => {
       var graphics = new PIXI.Graphics();
       graphics.beginFill(0xff0000, 0.8);
-      graphics.drawCircle(0, 0, 10 /*this.props.sizeAccessor(location)*/);
+      graphics.drawCircle(0, 0, radius /*this.props.sizeAccessor(location)*/);
       graphics.endFill();
       var node = new PIXI.Container();
       node.addChild(graphics);
       node._data = accident;
+      node._graphics = graphics
+      node._radius = radius
       this._accidentsContainer.addChild(node);
       var key = this.props.accidentAccessor(accident);
       this._accidents[key] = node;
@@ -233,11 +241,26 @@ module.exports = React.createClass({
       var pixel = mercator.project(lngLat);
       node.position.x = pixel[0];
       node.position.y = pixel[1];
+
+
+      //console.log(node._graphics)
+      const g = node._graphics
+      g.interactive = true
+      g.hitArea = new PIXI.Circle(0,0,node._radius)
+      g.mouseover = this._onAccidentClick
+      g._data = node._data
     })
+  },
+
+  _onAccidentClick: function(e) {
+    console.log(e.target._data.shortid)
+
   },
 
   _redrawLocations: function(mercator) {
     const railSize = 30
+
+    const radius = RADIUS.GHOSTBIKE * this.props.dotRadius
 
     Object.keys(this._locations).forEach((key, i) => {
       var node = this._locations[key];
@@ -249,11 +272,15 @@ module.exports = React.createClass({
 
       var circle = new PIXI.Graphics();
       circle.beginFill(0xff00ff,1.0);
-      circle.drawCircle(0,0, 8);
+      circle.drawCircle(0,0, radius);
       circle.endFill();
       circle.x = pixel[0]
       circle.y = pixel[1]
       node.addChild(circle);
+
+      circle.interactive = true
+      circle.hitArea = new PIXI.Circle(circle.x,circle.y,radius)
+      circle.mouseover = this._onAccidentClick
 
       // fade out older childs
       if (node.children.length > railSize) {
@@ -267,7 +294,7 @@ module.exports = React.createClass({
   },
 
   _redraw: function _redraw() {
-    var mercator = ViewportMercator(this.props);
+    const mercator = ViewportMercator(this.props);
     this._renderer.resize(this.props.width, this.props.height);
     this._redrawLocations(mercator)
     this._redrawPolylines(mercator)
@@ -281,7 +308,6 @@ module.exports = React.createClass({
       ref: 'overlay',
       width: this.props.width * pixelRatio,
       height: this.props.height * pixelRatio,
-      onMouseDown: this._onStartDrag,
       style: {
         width: this.props.width + 'px',
         height: this.props.height + 'px',

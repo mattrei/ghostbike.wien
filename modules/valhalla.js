@@ -86,6 +86,7 @@ async function getRoute(route) {
             "costing_options":{"bicycle":{"bicycle_type":"road"}},
             "directions_options":{"units":"kilometers"}}&api_key=${API_KEY}`
 
+        console.log(url)
         try {
           const response = await fetch(url)
           let data = await response.json()
@@ -93,6 +94,7 @@ async function getRoute(route) {
           return data
         } catch(e) {
           console.error(e)
+          console.log(e)
         }
 
       }

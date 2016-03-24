@@ -21,15 +21,16 @@ module.exports = (io) => {
     console.log(hub.connectCounter)
     socket.on('set route', async (req) => {
       console.log('set route')
-      /*
+      console.log(req)
       const trip = await getRoute(req.data.route)
 
+      console.log(trip)
       const data = {
         data: {ghostbike: req.data.ghostbike}
       }
       Object.assign(data.data, trip)
       broadcastRoute(data, socket)
-      */
+
     })
     socket.on('disconnect', () => {
       hub.connectCounter -= 1;

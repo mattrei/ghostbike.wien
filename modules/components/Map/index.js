@@ -12,6 +12,7 @@ import shortid from 'shortid'
 import PIXI from 'pixi.js'
 import r from 'r-dom'
 import MapGL from 'react-map-gl'
+const ViewportMercator = require('viewport-mercator-project')
 
 import Immutable from 'immutable'
 import tinycolor from 'tinycolor2'
@@ -22,9 +23,10 @@ var rasterTileStyle = require('raster-tile-style');
 const tileSource = '//tile.stamen.com/toner/{z}/{x}/{y}.png';
 const mapStyle = rasterTileStyle([tileSource], 512)
 
-import {API_KEY, decode} from './routing'
-
+const DURATION_FACTOR = 1/50
+const QUANTITY_FACTOR = 10
 const VIE = {lat: 48.209206, lng: 16.372778}
+const INITIAL_ZOOM = 12
 
 import io from 'socket.io-client'
 
@@ -42,8 +44,9 @@ class Map extends React.Component {
         //mapStyle: Immutable.fromJS(mapStyle),
         mapStyle: 'mapbox://styles/mapbox/dark-v8',
         mapboxApiAccessToken: 'pk.eyJ1IjoibWF0dHJlIiwiYSI6IjRpa3ItcWcifQ.s0AGgKi0ai23K5OJvkEFnA',
-        zoom: 11,
-        isDragging: false
+        zoom: INITIAL_ZOOM,
+        isDragging: false,
+        //interactive: true
       },
       accidents: [],
       polylines: [],
@@ -79,12 +82,14 @@ class Map extends React.Component {
     return ghostbike
   }
 
+  _isMe = (id) => { id === this.props.me.id}
+
   _onResponseRoute = (resp) => {
     console.log("on response")
     console.log(resp)
     const respId = resp.data.ghostbike.id
     let ghostbike = this.props.me
-    if (respId !== this.props.me.id) {
+    if (!this._isMe(respId)) {
       // if it is not me
       console.log('is not me')
       ghostbike = this.state.ghostbikes.find(ghostbike => ghostbike.id === respId )
@@ -113,8 +118,8 @@ class Map extends React.Component {
 
   _tweenGhostbike = (ghostbike) => {
     const values = ghostbike._polyline.shape,
-       duration = ghostbike._trip.summary.time / 50,
-       quantity = ghostbike._trip.summary.length
+       duration = ghostbike._trip.summary.time * DURATION_FACTOR,
+       quantity = ghostbike._trip.summary.length * QUANTITY_FACTOR
 
     const tween = new TweenMax(ghostbike, quantity, {
         bezier: {
@@ -183,18 +188,41 @@ class Map extends React.Component {
   _routeCompleted = (ghostbike) => {
     //this.setState({polylines: this.state.polylines.concat([polyline])})
     console.log('route completed')
-    console.log(this.props.socket)
     const route = this._getRandomAccidents(),
       data = {
         ghostbike: ghostbike,
         route: route
       }
-    this.props.socket.emit('set route', data)
+    this.props.socket.emit('set route', {data: data})
     console.log(this.props.socket)
   }
 
   _routeUpdated = (ghostbike) => {
-    //console.log("update")
+
+    const {viewport} = this.state
+    const center = [viewport.width, viewport.height]
+
+    const mercator = ViewportMercator(viewport);
+    //console.log(ghostbike.id + ' ' + this.props.me.id)
+    //if (this._isMe(ghostbike.id)) {
+      var lngLat = [ghostbike.longitude, ghostbike.latitude]
+      const pixelLngLat = mercator.project(lngLat)
+
+      const diff = [pixelLngLat[0]-center[0], pixelLngLat[1]-center[1]],
+        centeredPixel = [pixelLngLat[0]+diff[0], pixelLngLat[1]+diff[1]]
+
+      const diffLngLat = mercator.unproject(centeredPixel)
+
+      const newViewport = {
+        longitude: diffLngLat[0],
+        latitude: diffLngLat[1],
+        isDragging: true,
+        startDragLngLat: pixelLngLat
+      };
+      //this._onChangeViewport(newViewport)
+
+    //}
+
   }
 
   _getRandomAccidents = () => {
@@ -209,16 +237,21 @@ class Map extends React.Component {
     this.setState({viewport: Object.assign({}, this.state.viewport, viewport)});
   }
 
+  _scaleRelativeToZoom(radius, relativeToZoom, zoom) {
+    return radius * Math.pow(2, zoom) / Math.pow(2, relativeToZoom);
+  }
+
   render() {
     return <div>
-            <Title render={prev => `${prev} | Dragon!`}/>
-            <h2 className={header}>RAR!</h2>
+            <Title render={prev => `${prev}`}/>
             <MapGL {...this.state.viewport}
               onChangeViewport={this._onChangeViewport}>
               <Overlay {...this.state.viewport}
                 locations={this.state.ghostbikes}
                 polylines={this.state.polylines}
-                accidents={this.state.accidents} />
+                accidents={this.state.accidents}
+                dotRadius={this._scaleRelativeToZoom(1, INITIAL_ZOOM, this.state.viewport.zoom)}
+                />
             </MapGL>
           </div>
 
