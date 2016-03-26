@@ -1,3 +1,7 @@
+language: node_js
+node_js:
+  - "5"
+
 deploy:
   provider: openshift
   user: matthias.treitler@gmail.com
