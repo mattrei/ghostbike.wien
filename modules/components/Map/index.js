@@ -30,7 +30,7 @@ const INITIAL_ZOOM = 12
 
 import io from 'socket.io-client'
 
-const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8082
+const SOCKETIO_PORT = 8000
 const ioSocket = io(`http://localhost:${SOCKETIO_PORT}`)
 
 class Map extends React.Component {

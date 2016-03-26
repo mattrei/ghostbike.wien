@@ -12,7 +12,7 @@ import schema from './schema'
 
 
 
-export const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8082
+export const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8000
 
 function getApp(req, res, requestCallback) {
   // here is your chance to do things like get an auth token and generate
