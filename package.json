@@ -10,7 +10,6 @@
   },
   "scripts": {
     "start": "if-env NODE_ENV=production && npm run react-project:start:prod || npm run react-project:start:dev",
-    "test": "karma start",
     "react-project:start:dev": "react-project start",
     "react-project:start:prod": "rm -rf .build && react-project build && node .build/server.js"
   },
