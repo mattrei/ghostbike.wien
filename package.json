@@ -9,7 +9,8 @@
     "webpack": "webpack.config.js"
   },
   "scripts": {
-    "start": "if-env NODE_ENV=production && npm run react-project:start:prod || npm run react-project:start:dev",
+    "start": "npm run react-project:start:prod",
+    "dev": "if-env NODE_ENV=production && npm run react-project:start:prod || npm run react-project:start:dev",
     "react-project:start:dev": "react-project start",
     "react-project:start:prod": "rm -rf .build && react-project build && node .build/server.js"
   },
