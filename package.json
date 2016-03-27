@@ -9,9 +9,9 @@
     "webpack": "webpack.config.js"
   },
   "scripts": {
-    "start": "./node_modules/.bin/if-env NODE_ENV=production && npm run react-project:start:prod || npm run react-project:start:dev",
-    "react-project:start:dev": "./node_modules/.bin/react-project start",
-    "react-project:start:prod": "rm -rf .build && ./node_modules/.bin/react-project build && node .build/server.js"
+    "start": "if-env NODE_ENV=production && npm run react-project:start:prod || npm run react-project:start:dev",
+    "react-project:start:dev": "react-project start",
+    "react-project:start:prod": "rm -rf .build && react-project build && node .build/server.js"
   },
   "author": "",
   "license": "ISC",
