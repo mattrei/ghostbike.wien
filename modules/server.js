@@ -11,9 +11,8 @@ import mongoose from 'mongoose'
 import graffiti from '@risingstack/graffiti'
 import schema from './schema'
 
-const PORT = process.env.PORT || 8000
-
-export const SOCKETIO_PORT = process.env.SOCKETIO_PORT || 8000
+const PORT = process.env.NODE_PORT || process.env.PORT
+const IP = process.env.NODE_IP || 'localhost'
 
 function getApp(req, res, requestCallback) {
   // here is your chance to do things like get an auth token and generate
@@ -39,7 +38,7 @@ const io = createIo(httpServer)
 //
 server._listen = (port) => {}
 server.start()
-httpServer.listen(PORT)
+httpServer.listen(PORT, IP)
 
 
 //const server = require('http').Server(app)
