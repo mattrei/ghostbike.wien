@@ -29,9 +29,7 @@ const VIE = {lat: 48.209206, lng: 16.372778}
 const INITIAL_ZOOM = 12
 
 import io from 'socket.io-client'
-
-const SOCKETIO_PORT = 8000
-const ioSocket = io(`http://localhost:${SOCKETIO_PORT}`)
+const ioSocket = io()
 
 class Map extends React.Component {
 
