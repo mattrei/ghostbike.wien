@@ -11,8 +11,8 @@ import mongoose from 'mongoose'
 import graffiti from '@risingstack/graffiti'
 import schema from './schema'
 
-const PORT = process.env.NODE_PORT || process.env.PORT
-const IP = process.env.NODE_IP || 'localhost'
+const PORT =  process.env.OPENSHIFT_INTERNAL_PORT || process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT
+const IP = process.env.OPENSHIFT_NODEJS_IP  || 'localhost'
 
 function getApp(req, res, requestCallback) {
   // here is your chance to do things like get an auth token and generate

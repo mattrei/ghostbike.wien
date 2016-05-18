@@ -9,7 +9,6 @@ import Title from 'react-title-component'
 
 import shortid from 'shortid'
 
-import PIXI from 'pixi.js'
 import r from 'r-dom'
 import MapGL from 'react-map-gl'
 const ViewportMercator = require('viewport-mercator-project')

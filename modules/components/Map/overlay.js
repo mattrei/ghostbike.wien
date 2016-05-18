@@ -1,12 +1,13 @@
 var React = require('react');
 var window = require('global/window');
 var r = require('r-dom');
-var PIXI = require('pixi.js');
+var PIXI = require('pixi.js'),
+  particles = require('pixi-particles');
 var browser = require('bowser');
 var ViewportMercator = require('viewport-mercator-project');
 var prefix = browser.webkit ? '-webkit-' : browser.gecko ? '-moz-' : '';
 
-const RADIUS = {GHOSTBIKE: 4, ACCIDENT: 5}
+const RADIUS = {GHOSTBIKE: 10, ACCIDENT: 5}
 
 module.exports = React.createClass({
 
@@ -85,8 +86,70 @@ module.exports = React.createClass({
     this._stage.addChild(this._accidentsContainer);
     this._accidents = [];
 
+    this._elapsed = Date.now()
+
+    this._setupParticles()
     this._updateScene();
     this._redraw();
+  },
+
+  _setupParticles() {
+    this._gasEmitter = new PIXI.particles.Emitter(
+      this._stage,
+      [PIXI.Texture.fromImage('particles/particle.png'),
+       PIXI.Texture.fromImage('particles/smokeparticle.png')],
+       {
+					"alpha": {
+						"start": 0.4,
+						"end": 0
+					},
+					"scale": {
+						"start": 2,
+						"end": 0.4
+					},
+					"color": {
+						"start": "6bff61",
+						"end": "d8ff4a"
+					},
+					"speed": {
+						"start": 10,
+						"end": 10
+					},
+					"startRotation": {
+						"min": 0,
+						"max": 360
+					},
+					"rotationSpeed": {
+						"min": 0,
+						"max": 0
+					},
+					"lifetime": {
+						"min": 2,
+						"max": 1.8
+					},
+					"blendMode": "screen",
+					"frequency": 0.01,
+					"emitterLifetime": 0,
+					"maxParticles": 1000,
+					"pos": {
+						"x": 0.5,
+						"y": 0.5
+					},
+					"addAtBack": true,
+					"spawnType": "circle",
+					"spawnCircle": {
+						"x": 0,
+						"y": 0,
+						"r": 150
+					}
+				})
+
+    console.log(this._gasEmitter)
+
+    this._elapsed -= Date.now()
+    this._gasEmitter.update(this._elapsed * 0.001)
+    this._gasEmitter.updateOwnerPos(100, 100)
+    this._gasEmitter.emit = true
   },
 
   componentWillReceiveProps: function componentWillReceiveProps(newProps) {
@@ -290,10 +353,18 @@ module.exports = React.createClass({
       while (len--) {
           node.children[len].alpha -= 0.05
       }
+
+      //this._gasEmitter.update(this._elapsed * 0.001)
+      //this._gasEmitter.updateOwnerPos(pixel[0], pixel[1])
+      //this._gasEmitter.emit = true
+
     })
   },
 
   _redraw: function _redraw() {
+
+    this._elapsed = Date.now() - this._elapsed
+
     const mercator = ViewportMercator(this.props);
     this._renderer.resize(this.props.width, this.props.height);
     this._redrawLocations(mercator)
